@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, session, url_for
 from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -32,16 +32,13 @@ def internal_server_error(e):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    name = None
-    email = None
     form = NameForm()
     if form.validate_on_submit():
-        name = form.name.data
-        email = form.email.data
-        form.name.data = ''
-        form.email.data = ''
-    return render_template('index.html', name=name, email=email, form=form,
-                           current_time=datetime.utcnow())
+        session['name'] = form.name.data
+        session['email'] = form.email.data
+        return redirect(url_for('index'))
+    return render_template('index.html', name=session.get('name'),
+        email=session.get('email'), form=form, current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
