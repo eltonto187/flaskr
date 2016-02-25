@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, render_template, redirect, session, url_for
+from flask import Flask, render_template, redirect, session, url_for, flash
 from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -34,6 +34,9 @@ def internal_server_error(e):
 def index():
     form = NameForm()
     if form.validate_on_submit():
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('看起来你已经改变了你输入的名字')
         session['name'] = form.name.data
         session['email'] = form.email.data
         return redirect(url_for('index'))
