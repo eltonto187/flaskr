@@ -1,4 +1,5 @@
 import os
+from threading import Thread
 from datetime import datetime
 from flask import Flask, render_template, redirect, session, url_for, flash
 from flask.ext.script import Manager, Shell
@@ -9,6 +10,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import Required, Email
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate, MigrateCommand
+from flask.ext.mail import Mail, Message
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -17,12 +19,21 @@ app.config['SECRET_KEY'] = 'hard to guess string'
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['MAIL_SERVER'] = 'smtp.qq.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('FLASK_MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('FLASK_MAIL_PASSWORD')
+app.config['FLASKR_MAIL_SUBJECT_PREFIX'] = '[Flaskr]'
+app.config['FLASKR_MAIL_SENDER'] = 'Flaskr Admin <416427921@qq.com>'
+app.config['FLASKR_ADMIN'] = os.environ.get('FLASK_ADMIN')
 
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+mail = Mail(app)
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -54,6 +65,21 @@ class NameForm(Form):
     submit = SubmitField('提交')
 
 
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKR_MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+                  sender=app.config['FLASKR_MAIL_SENDER'],
+                  recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -74,6 +100,9 @@ def index():
             user = User(username=form.name.data)
             db.session.add(user)
             session['konwn'] = False
+            if app.config['FLASKR_ADMIN']:
+                send_email(app.config['FLASKR_ADMIN'], '新用户',
+                           'mail/new_user', user=user)
         else:
             session['konwn'] = True
         if old_name is not None and old_name != form.name.data:
