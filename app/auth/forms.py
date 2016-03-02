@@ -15,9 +15,10 @@ class RegistrationForm(Form):
     email = StringField('邮箱', validators=[Required(), Length(1,64),
                                             Email()])
     username = StringField('用户名', validators=[
-        Required(), Length(1,64), Regexp('^[A-Za-z][A-Za-z0-9._]*$', 0,
-                                         '用户名必须以字母开头,'
-                                         '只能包含字母，数字，点或下划线')])
+        Required(), Length(1,64), Regexp(
+            '^[A-Za-z\u4e00-\u9fa5][A-Za-z0-9\u4e00-\u9fa5._]*$', 0,
+            '用户名必须以中文或字母开头,'
+            '只能包含中文，字母，数字，点或下划线')])
     password = PasswordField('密码', validators=[
         Required(), EqualTo('password2', message='密码必段匹配')])
     password2 = PasswordField('确认密码', validators=[Required()])
