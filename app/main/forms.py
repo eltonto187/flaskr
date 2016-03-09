@@ -6,12 +6,6 @@ from wtforms import ValidationError
 from ..models import Role, User
 
 
-class NameForm(Form):
-    name = StringField('你的名字', validators=[Required()])
-    email = StringField('你的电子邮箱', validators=[Email()])
-    submit = SubmitField('提交')
-
-
 class EditProfileForm(Form):
     name = StringField('真实姓名', validators=[Length(0, 64)])
     location = StringField('地址', validators=[Length(0, 64)])
@@ -50,3 +44,7 @@ class EditProfileAdminForm(Form):
                 User.query.filter_by(username=field.data).first():
             raise ValidationError('用户名已经被使用')
 
+
+class PostForm(Form):
+    body = TextAreaField('随手写下你的心情', validators=[Required()])
+    submit = SubmitField('提交')
