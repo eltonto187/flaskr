@@ -4,7 +4,7 @@ from flask.ext.login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm
 from ..models import User, Role, Post, Permission
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 from .. import db
 
 
@@ -104,3 +104,70 @@ def edit(id):
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
 
+
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('无效的用户')
+        return redirect(url_for('.index'))
+    if current_user.is_following(user):
+        flash('你已经关注了这位用户')
+        return redirect(url_for('.user', username=username))
+    current_user.follow(user)
+    flash('你现在关注了 %s.' % username)
+    return redirect(url_for('.user', username=username))
+
+
+@main.route('/unfollow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('无效的用户')
+        return redirect(url_for('.index'))
+    if not current_user.is_following(user):
+        flash('你还没有关注这位用户')
+        return redirect(url_for('.user', username=username))
+    current_user.unfollow(user)
+    flash('你现在不再关注 %s.' % username)
+    return redirect(url_for('.user', username=username))
+
+
+# 关注者(粉丝)路由
+@main.route('/followers/<username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('无效的用户')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(
+        page, per_page=current_app.config['FLASKR_FOLLOWERS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.follower, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="粉丝",
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
+
+
+# 被关注者路由
+@main.route('/followed_by/<username>')
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('无效的用户')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(
+        page, per_page=current_app.config['FLASKR_FOLLOWERS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.followed, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="关注",
+                           endpoint='.followed_by', pagination=pagination,
+                           follows=follows)

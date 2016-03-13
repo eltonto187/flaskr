@@ -14,6 +14,7 @@ class Config():
     FLASKR_MAIL_SENDER = 'Flaskr Admin <416427921@qq.com>'
     FLASKR_ADMIN = os.environ.get('FLASKR_ADMIN')
     FLASKR_POSTS_PER_PAGE = 20
+    FLASKR_FOLLOWERS_PER_PAGE = 50
 
     @staticmethod
     def init_app(app):
