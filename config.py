@@ -15,6 +15,7 @@ class Config():
     FLASKR_ADMIN = os.environ.get('FLASKR_ADMIN')
     FLASKR_POSTS_PER_PAGE = 20
     FLASKR_FOLLOWERS_PER_PAGE = 50
+    FLASKR_COMMENTS_PER_PAGE = 30
 
     @staticmethod
     def init_app(app):
