@@ -1,12 +1,24 @@
 from flask import render_template, redirect, flash, url_for, request, \
     current_app, abort, make_response
 from flask.ext.login import login_required, current_user
+from flask.ext.sqlalchemy import get_debug_queries
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm, \
     CommentForm
 from ..models import User, Role, Post, Permission, Comment
 from ..decorators import admin_required, permission_required
 from .. import db
+
+
+@main.after_app_request
+def after_requests(response):
+    for query in get_debug_queries():
+        if query.duration >= current_app.config['FLASKR_SLOW_DB_QUERY_TIME']:
+            current_app.logger.warning(
+                'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n'
+                % (query.statement, query.parameters, query.duration,
+                   query.context))
+    return response
 
 
 # 关闭服务器路由，Selenium测试时使用

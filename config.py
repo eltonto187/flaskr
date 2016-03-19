@@ -5,6 +5,7 @@ class Config():
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_RECORD_QUERIES = True
     MAIL_SERVER = 'smtp.qq.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
@@ -16,6 +17,7 @@ class Config():
     FLASKR_POSTS_PER_PAGE = 20
     FLASKR_FOLLOWERS_PER_PAGE = 50
     FLASKR_COMMENTS_PER_PAGE = 30
+    FLASKR_SLOW_DB_QUERY_TIME = 0.5
 
     @staticmethod
     def init_app(app):
