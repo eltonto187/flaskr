@@ -9,6 +9,18 @@ from ..decorators import admin_required, permission_required
 from .. import db
 
 
+# 关闭服务器路由，Selenium测试时使用
+@main.route('/shutdown')
+def server_shutdown():
+    if not current_app.testing:
+        abort(404)
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if not shutdown:
+        abort(500)
+    shutdown()
+    return 'Shutting down...'
+
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
