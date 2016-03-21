@@ -21,9 +21,9 @@ def after_requests(response):
     return response
 
 
-# 关闭服务器路由，Selenium测试时使用
 @main.route('/shutdown')
 def server_shutdown():
+    """关闭服务器视图，Selenium测试时使用"""
     if not current_app.testing:
         abort(404)
     shutdown = request.environ.get('werkzeug.server.shutdown')
@@ -187,9 +187,9 @@ def unfollow(username):
     return redirect(url_for('.user', username=username))
 
 
-# 关注者(粉丝)路由
 @main.route('/followers/<username>')
 def followers(username):
+    """关注者(粉丝)视图函数"""
     user = User.query.filter_by(username=username).first()
     if user is None:
         flash('无效的用户')
@@ -205,9 +205,9 @@ def followers(username):
                            follows=follows)
 
 
-# 被关注者路由
 @main.route('/followed_by/<username>')
 def followed_by(username):
+    """被关注者视图函数"""
     user = User.query.filter_by(username=username).first()
     if user is None:
         flash('无效的用户')
@@ -272,3 +272,16 @@ def moderate_disable(id):
     db.session.add(comment)
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/delete-post/<int:id>')
+@login_required
+def delete_post(id):
+    """文章删除视图函数。用request.referrer重定向到来源网页"""
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.is_administrator():
+        abort(403)
+    db.session.delete(post)
+    flash('文章已经删除')
+    return redirect(request.referrer)
