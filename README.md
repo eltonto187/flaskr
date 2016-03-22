@@ -2,13 +2,13 @@
 
 ## 本地安装
 
-git clone git@github.com:eltonto187/flaskr.git
+    git clone git@github.com:eltonto187/flaskr.git
 
 ## 安装需求文件
 
-pip install -r requirements/dev.py
+    pip install -r requirements/dev.py
 
 ## 运行
 
-python manage.py runserver
+    python manage.py runserver
 
