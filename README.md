@@ -1,4 +1,4 @@
-# 个人博客系统 [部署在heroku上](https://eltonto.herokuapp.com)
+# 个人博客系统 部署在heroku上[https://eltonto.herokuapp.com](https://eltonto.herokuapp.com)
 
 ## 本地安装
 
